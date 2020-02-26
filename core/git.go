@@ -166,7 +166,7 @@ func (cache *gitCache) cloneRepo(repo string, commit string, branch string) chan
 		}
 		clonePathOnFS := path.Join(os.TempDir(), randomFolderName.String())
 		logger.Info(emoji.Sprintf(":helicopter: Cloning %s => %s", cacheToken, clonePathOnFS))
-		cloneCommandArgs = append(cloneCommandArgs, clonePathOnFS)
+		cloneCommandArgs = append(cloneCommandArgs, clonePathOnFS, "-c", "http.extraheader=\"AUTHORIZATION: bearer $(System.AccessToken)\"")
 		cloneCommand := exec.Command("git", cloneCommandArgs...)
 		cloneCommand.Env = append(cloneCommand.Env, os.Environ()...)         // pass all env variables to git command so proper SSH config is passed if needed
 		cloneCommand.Env = append(cloneCommand.Env, "GIT_TERMINAL_PROMPT=0") // tell git to fail if it asks for credentials
