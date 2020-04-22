@@ -378,50 +378,52 @@ func updateHelmChartDep(chartPath string) (err error) {
 	}
 
 	// Parse chart dependency repositories and add them if not present
-	requirementsYamlPath := path.Join(absChartPath, "requirements.yaml")
+	requirementsYamlPaths := []string{path.Join(absChartPath, "requirements.yaml"), path.Join(absChartPath, "Chart.yaml")}
 	addedDepRepoList := []string{}
-	if _, err := os.Stat(requirementsYamlPath); err == nil {
-		logger.Info(fmt.Sprintf("requirements.yaml found at '%s', ensuring repositories exist on helm client", requirementsYamlPath))
+	for _, requirementsYamlPath := range requirementsYamlPaths {
+		if _, err := os.Stat(requirementsYamlPath); err == nil {
+			logger.Info(fmt.Sprintf("dependencies found in '%s', ensuring repositories exist on helm client", requirementsYamlPath))
 
-		bytes, err := ioutil.ReadFile(requirementsYamlPath)
-		if err != nil {
-			return err
-		}
-
-		requirementsYaml := helmRequirements{}
-		if err = yaml.Unmarshal(bytes, &requirementsYaml); err != nil {
-			return err
-		}
-
-		// Add each dependency repo with a temp name
-		for _, dep := range requirementsYaml.Dependencies {
-			currentRepo, err := getRepoName(dep.Repository)
-			if err == nil {
-				logger.Info(emoji.Sprintf(":pencil: Helm dependency repo already present: %v", currentRepo))
-				continue
-			}
-
-			if !strings.HasPrefix(dep.Repository, "http") {
-				logger.Info(emoji.Sprintf(":pencil: Skipping non-http helm dependency repo. Found '%v'", dep.Repository))
-				continue
-			}
-
-			logger.Info(emoji.Sprintf(":pencil: Adding helm dependency repository '%s'", dep.Repository))
-			randomUUID, err := uuid.NewRandom()
+			bytes, err := ioutil.ReadFile(requirementsYamlPath)
 			if err != nil {
 				return err
 			}
 
-			randomRepoName := randomUUID.String()
-			hd.mu.Lock()
-			if output, err := exec.Command("helm", "repo", "add", randomRepoName, dep.Repository).CombinedOutput(); err != nil {
-				hd.mu.Unlock()
-				logger.Error(emoji.Sprintf(":no_entry_sign: Failed to add helm dependency repository '%s' for chart '%s':\n%s", dep.Repository, chartPath, output))
+			requirementsYaml := helmRequirements{}
+			if err = yaml.Unmarshal(bytes, &requirementsYaml); err != nil {
 				return err
 			}
-			hd.mu.Unlock()
 
-			addedDepRepoList = append(addedDepRepoList, randomRepoName)
+			// Add each dependency repo with a temp name
+			for _, dep := range requirementsYaml.Dependencies {
+				currentRepo, err := getRepoName(dep.Repository)
+				if err == nil {
+					logger.Info(emoji.Sprintf(":pencil: Helm dependency repo already present: %v", currentRepo))
+					continue
+				}
+
+				if !strings.HasPrefix(dep.Repository, "http") {
+					logger.Info(emoji.Sprintf(":pencil: Skipping non-http helm dependency repo. Found '%v'", dep.Repository))
+					continue
+				}
+
+				logger.Info(emoji.Sprintf(":pencil: Adding helm dependency repository '%s'", dep.Repository))
+				randomUUID, err := uuid.NewRandom()
+				if err != nil {
+					return err
+				}
+
+				randomRepoName := randomUUID.String()
+				hd.mu.Lock()
+				if output, err := exec.Command("helm", "repo", "add", randomRepoName, dep.Repository).CombinedOutput(); err != nil {
+					hd.mu.Unlock()
+					logger.Error(emoji.Sprintf(":no_entry_sign: Failed to add helm dependency repository '%s' for chart '%s':\n%s", dep.Repository, chartPath, output))
+					return err
+				}
+				hd.mu.Unlock()
+
+				addedDepRepoList = append(addedDepRepoList, randomRepoName)
+			}
 		}
 	}
 
