@@ -24,12 +24,6 @@ func Install(path string) (err error) {
 		logger.Info(emoji.Sprintf(":mag: Using %s: %s", tool, path))
 	}
 
-	logger.Info(emoji.Sprintf(":point_right: Initializing Helm"))
-	if output, err := exec.Command("helm", "init", "--client-only").CombinedOutput(); err != nil {
-		logger.Error(emoji.Sprintf(":no_entry_sign: %s: %s", err, output))
-		return err
-	}
-
 	rootInit := func(startingPath string, environments []string, c core.Component) (component core.Component, err error) {
 		return c.InstallRoot(startingPath, environments)
 	}
