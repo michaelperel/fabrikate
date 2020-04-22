@@ -167,7 +167,7 @@ func (hg *HelmGenerator) Generate(component *core.Component) (manifest string, e
 	overriddenValuesFileName := fmt.Sprintf("%s.yaml", randomString.String())
 	absOverriddenPath := path.Join(os.TempDir(), overriddenValuesFileName)
 	defer os.Remove(absOverriddenPath)
-	
+
 	logger.Debug(emoji.Sprintf(":pencil: Writing config %s to %s\n", configYaml, absOverriddenPath))
 	if err = ioutil.WriteFile(absOverriddenPath, configYaml, 0777); err != nil {
 		return "", err
@@ -185,7 +185,7 @@ func (hg *HelmGenerator) Generate(component *core.Component) (manifest string, e
 		return "", err
 	}
 	logger.Info(emoji.Sprintf(":memo: Running `helm template` on template '%s'", chartPath))
-	output, err := exec.Command("helm", "template", chartPath, "--values", absOverriddenPath, "--name", component.Name, "--namespace", namespace).CombinedOutput()
+	output, err := exec.Command("helm", "template", component.Name, chartPath, "--values", absOverriddenPath, "--namespace", namespace).CombinedOutput()
 	if err != nil {
 		logger.Error(fmt.Sprintf("helm template failed with:\n%s: %s", err, output))
 		return "", err
