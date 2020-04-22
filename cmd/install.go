@@ -24,6 +24,21 @@ func Install(path string) (err error) {
 		logger.Info(emoji.Sprintf(":mag: Using %s: %s", tool, path))
 	}
 
+	// Stable and incubator repos were default with Helm 2;
+	// They are assumed to exist in Fabrikate as a non-http repo
+	// See timeline/deprecation schedule: https://github.com/helm/charts
+	logger.Info(emoji.Sprintf(":point_right: Adding stable repository"))
+	if output, err := exec.Command("helm", "repo", "add", "stable", "https://kubernetes-charts.storage.googleapis.com").CombinedOutput(); err != nil {
+		logger.Error(emoji.Sprintf(":no_entry_sign: %s: %s", err, output))
+		return err
+	}
+
+	logger.Info(emoji.Sprintf(":point_right: Adding incubator repository"))
+	if output, err := exec.Command("helm", "repo", "add", "incubator", "https://kubernetes-charts-incubator.storage.googleapis.com").CombinedOutput(); err != nil {
+		logger.Error(emoji.Sprintf(":no_entry_sign: %s: %s", err, output))
+		return err
+	}
+
 	rootInit := func(startingPath string, environments []string, c core.Component) (component core.Component, err error) {
 		return c.InstallRoot(startingPath, environments)
 	}
