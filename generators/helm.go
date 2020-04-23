@@ -427,16 +427,9 @@ func updateHelmChartDep(chartPath string) (err error) {
 		}
 	}
 
-	// Update dependencies -- Attempt twice; may fail the first time if running on
-	// a newly initialized ~/.helm directory because `helm serve` is typically
-	// not running and helm will attempt to fetch/cache all helm repositories
-	// during first run
 	logger.Info(emoji.Sprintf(":helicopter: Updating helm chart's dependencies for chart in '%s'", absChartPath))
 	if _, err := exec.Command("helm", "dependency", "update", chartPath).CombinedOutput(); err != nil {
-		if attempt2, err := exec.Command("helm", "dependency", "update", chartPath).CombinedOutput(); err != nil {
-			logger.Warn(emoji.Sprintf(":no_entry_sign: Updating chart dependencies failed for chart in '%s'; run `helm dependency update %s` for more error details.\n%s: %s", absChartPath, absChartPath, err, attempt2))
-			return err
-		}
+		return err
 	}
 
 	// Cleanup temp dependency repositories
@@ -454,6 +447,8 @@ func updateHelmChartDep(chartPath string) (err error) {
 	return err
 }
 
+// TODO: HELM_HOME is not a thing anymore, try to get config path from
+// helm CLI library.
 // getRepoName returns the repo name for the provided url
 func getRepoName(url string) (string, error) {
 	logger.Info(emoji.Sprintf(":eyes: Looking for repo %v", url))
