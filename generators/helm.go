@@ -19,9 +19,7 @@ import (
 	"github.com/otiai10/copy"
 	"github.com/timfpark/yaml"
 
-	"k8s.io/helm/pkg/helm/environment"
-	"k8s.io/helm/pkg/helm/helmpath"
-	"k8s.io/helm/pkg/repo"
+	"helm.sh/helm/v3/pkg/cli"
 )
 
 // HelmGenerator provides 'helm generate' generator functionality to Fabrikate
@@ -447,29 +445,23 @@ func updateHelmChartDep(chartPath string) (err error) {
 	return err
 }
 
-// TODO: HELM_HOME is not a thing anymore, try to get config path from
-// helm CLI library.
 // getRepoName returns the repo name for the provided url
 func getRepoName(url string) (string, error) {
 	logger.Info(emoji.Sprintf(":eyes: Looking for repo %v", url))
-	helmHome := os.Getenv(environment.HomeEnvVar)
-	if helmHome == "" {
-		helmHome = environment.DefaultHelmHome
-	}
-	a := helmpath.Home(helmHome)
-	f, err := repo.LoadRepositoriesFile(a.RepositoryFile())
-	if err != nil {
-		return "", err
-	}
-	if len(f.Repositories) == 0 {
+	helmEnvs := cli.New()
+	repoConfig := helmEnvs.RepositoryConfig
+	if _, err := os.Stat(repoConfig); os.IsNotExist(err) {
 		return "", fmt.Errorf("no repositories to show")
 	}
+	//if len(f.Repositories) == 0 {
+	//	return "", fmt.Errorf("no repositories to show")
+	//}
 
-	for _, re := range f.Repositories {
-		if strings.EqualFold(re.URL, url) {
-			logger.Info(emoji.Sprintf(":green_heart: %v matches repo %v", url, re.Name))
-			return re.Name, nil
-		}
-	}
+	//for _, re := range f.Repositories {
+	//	if strings.EqualFold(re.URL, url) {
+	//		logger.Info(emoji.Sprintf(":green_heart: %v matches repo %v", url, re.Name))
+	//		return re.Name, nil
+	//	}
+	//}
 	return "", fmt.Errorf("No repository found for %v", url)
 }
