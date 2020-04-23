@@ -20,6 +20,7 @@ import (
 	"github.com/timfpark/yaml"
 
 	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/repo"
 )
 
 // HelmGenerator provides 'helm generate' generator functionality to Fabrikate
@@ -450,18 +451,18 @@ func getRepoName(url string) (string, error) {
 	logger.Info(emoji.Sprintf(":eyes: Looking for repo %v", url))
 	helmEnvs := cli.New()
 	repoConfig := helmEnvs.RepositoryConfig
-	if _, err := os.Stat(repoConfig); os.IsNotExist(err) {
+	f, err := repo.LoadFile(repoConfig)
+	if err != nil {
+		return "", err
+	}
+	if len(f.Repositories) == 0 {
 		return "", fmt.Errorf("no repositories to show")
 	}
-	//if len(f.Repositories) == 0 {
-	//	return "", fmt.Errorf("no repositories to show")
-	//}
-
-	//for _, re := range f.Repositories {
-	//	if strings.EqualFold(re.URL, url) {
-	//		logger.Info(emoji.Sprintf(":green_heart: %v matches repo %v", url, re.Name))
-	//		return re.Name, nil
-	//	}
-	//}
+	for _, re := range f.Repositories {
+		if strings.EqualFold(re.URL, url) {
+			logger.Info(emoji.Sprintf(":green_heart: %v matches repo %v", url, re.Name))
+			return re.Name, nil
+		}
+	}
 	return "", fmt.Errorf("No repository found for %v", url)
 }
