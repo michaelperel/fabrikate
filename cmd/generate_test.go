@@ -39,8 +39,8 @@ func TestGenerateYAML(t *testing.T) {
 
 	expectedLengths := map[string]int{
 		"prometheus-grafana": 125,
-		"grafana":            8575,
-		"prometheus":         21401,
+		"grafana":            8552,
+		"prometheus":         21341,
 	}
 
 	assert.Nil(t, err)
