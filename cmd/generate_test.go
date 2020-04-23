@@ -22,10 +22,10 @@ func TestGenerateJSON(t *testing.T) {
 	assert.Nil(t, err)
 
 	expectedLengths := map[string]int{
-		"elasticsearch":         14495,
-		"elasticsearch-curator": 2394,
-		"fluentd-elasticsearch": 20203,
-		"kibana":                1595,
+		"elasticsearch":         14477,
+		"elasticsearch-curator": 2390,
+		"fluentd-elasticsearch": 20230,
+		"kibana":                1590,
 		"static":                188,
 	}
 
