@@ -363,7 +363,7 @@ resource manifests from Fabrikate defintions.
 [azure-devops-build-status]:
   https://tpark.visualstudio.com/fabrikate/_apis/build/status/microsoft.fabrikate?branchName=master
 [azure-devops-build-link]:
-  https://tpark.visualstudio.com/fabrikate/_build/latest?definitionId=35&branchName=master
+  https://tpark.visualstudio.com/fabrikate/_build/latest?definitionId=35&branchName=develop
 [go-report-card]: https://goreportcard.com/report/github.com/microsoft/fabrikate
 [go-report-card-badge]:
   https://goreportcard.com/badge/github.com/microsoft/fabrikate
